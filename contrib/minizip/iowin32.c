@@ -105,7 +105,7 @@ voidpf ZCALLBACK win32_open64_file_func (voidpf opaque,const void* filename,int 
 
     win32_translate_open_mode(mode,&dwDesiredAccess,&dwCreationDisposition,&dwShareMode,&dwFlagsAndAttributes);
 
-#if IOWIN32_USING_WINRT_API > 0
+#if IOWIN32_USING_WINRT_API
 #ifdef UNICODE
     if ((filename!=NULL) && (dwDesiredAccess != 0))
         hFile = CreateFile2((LPCTSTR)filename, dwDesiredAccess, dwShareMode, dwCreationDisposition, NULL);
@@ -134,7 +134,7 @@ voidpf ZCALLBACK win32_open64_file_funcA (voidpf opaque,const void* filename,int
 
     win32_translate_open_mode(mode,&dwDesiredAccess,&dwCreationDisposition,&dwShareMode,&dwFlagsAndAttributes);
 
-#if IOWIN32_USING_WINRT_API > 0
+#if IOWIN32_USING_WINRT_API
     if ((filename!=NULL) && (dwDesiredAccess != 0))
     {
         WCHAR filenameW[FILENAME_MAX + 0x200 + 1];
@@ -158,7 +158,7 @@ voidpf ZCALLBACK win32_open64_file_funcW (voidpf opaque,const void* filename,int
 
     win32_translate_open_mode(mode,&dwDesiredAccess,&dwCreationDisposition,&dwShareMode,&dwFlagsAndAttributes);
 
-#if IOWIN32_USING_WINRT_API > 0
+#if IOWIN32_USING_WINRT_API
     if ((filename!=NULL) && (dwDesiredAccess != 0))
         hFile = CreateFile2((LPCWSTR)filename, dwDesiredAccess, dwShareMode, dwCreationDisposition,NULL);
 #else
@@ -178,7 +178,7 @@ voidpf ZCALLBACK win32_open_file_func (voidpf opaque,const char* filename,int mo
 
     win32_translate_open_mode(mode,&dwDesiredAccess,&dwCreationDisposition,&dwShareMode,&dwFlagsAndAttributes);
 
-#if IOWIN32_USING_WINRT_API > 0
+#if IOWIN32_USING_WINRT_API
 #ifdef UNICODE
     if ((filename!=NULL) && (dwDesiredAccess != 0))
         hFile = CreateFile2((LPCTSTR)filename, dwDesiredAccess, dwShareMode, dwCreationDisposition, NULL);
@@ -244,7 +244,7 @@ uLong ZCALLBACK win32_write_file_func (voidpf opaque,voidpf stream,const void* b
 
 static BOOL MySetFilePointerEx(HANDLE hFile, LARGE_INTEGER pos, LARGE_INTEGER *newPos,  DWORD dwMoveMethod)
 {
-#if IOWIN32_USING_WINRT_API > 0
+#if IOWIN32_USING_WINRT_API
     return SetFilePointerEx(hFile, pos, newPos, dwMoveMethod);
 #else
     LONG lHigh = pos.HighPart;
