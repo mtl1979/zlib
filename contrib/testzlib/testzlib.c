@@ -121,8 +121,13 @@ int ReadFileMemory(const char* filename,long* plFileSize,unsigned char** pFilePt
     FILE* stream;
     unsigned char* ptr;
     int retVal=1;
+#if __STDC_WANT_SECURE_LIB__
+    errno_t err = fopen_s(&stream, filename, "rb");
+    if (FAILED(err))
+#else
     stream=fopen(filename, "rb");
     if (stream==NULL)
+#endif
         return 0;
 
     fseek(stream,0,SEEK_END);

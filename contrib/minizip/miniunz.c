@@ -151,7 +151,11 @@ int makedir (newdir)
                 printf("Error allocating memory\n");
                 return UNZ_INTERNALERROR;
         }
+#if __STDC_WANT_SECURE_LIB__
+  strcpy_s(buffer,len+1,newdir);
+#else
   strcpy(buffer,newdir);
+#endif
 
   if (buffer[len-1] == '/') {
     buffer[len-1] = '\0';
@@ -377,8 +381,13 @@ int do_extract_currentfile(uf,popt_extract_without_path,popt_overwrite,password)
         {
             char rep=0;
             FILE* ftestexist;
+#if __STDC_WANT_SECURE_LIB__
+            errno_t err = fopen_s(&ftestexist,write_filename,"rb");
+            if (SUCCEEDED(err))
+#else
             ftestexist = FOPEN_FUNC(write_filename,"rb");
             if (ftestexist!=NULL)
+#endif
             {
                 fclose(ftestexist);
                 do
@@ -387,7 +396,11 @@ int do_extract_currentfile(uf,popt_extract_without_path,popt_overwrite,password)
                     int ret;
 
                     printf("The file %s exists. Overwrite ? [y]es, [n]o, [A]ll: ",write_filename);
+#if __STDC_WANT_SECURE_LIB__
+                    ret = scanf_s("%ls",answer,_countof(answer));
+#else
                     ret = scanf("%1s",answer);
+#endif
                     if (ret != 1)
                     {
                        exit(EXIT_FAILURE);
@@ -408,25 +421,46 @@ int do_extract_currentfile(uf,popt_extract_without_path,popt_overwrite,password)
 
         if ((skip==0) && (err==UNZ_OK))
         {
+#if __STDC_WANT_SECURE_LIB__
+            errno_t err = fopen_s(&fout,write_filename,"wb");
+#else
             fout=FOPEN_FUNC(write_filename,"wb");
+#endif
             /* some zipfile don't contain directory alone before file */
-            if ((fout==NULL) && ((*popt_extract_without_path)==0) &&
+#if __STDC_WANT_SECURE_LIB__
+            if (FAILED(err) &&
+#else
+            if ((fout == NULL) &&
+#endif
+                ((*popt_extract_without_path)==0) &&
                                 (filename_withoutpath!=(char*)filename_inzip))
             {
                 char c=*(filename_withoutpath-1);
                 *(filename_withoutpath-1)='\0';
                 makedir(write_filename);
                 *(filename_withoutpath-1)=c;
+#if __STDC_WANT_SECURE_LIB__
+                err = fopen_s(&fout,write_filename,"wb");
+#else
                 fout=FOPEN_FUNC(write_filename,"wb");
+#endif
             }
 
+#if __STDC_WANT_SECURE_LIB__
+            if (FAILED(err))
+#else
             if (fout==NULL)
+#endif
             {
                 printf("error opening %s\n",write_filename);
             }
         }
 
+#if __STDC_WANT_SECURE_LIB__
+        if (SUCCEEDED(err))
+#else
         if (fout!=NULL)
+#endif
         {
             printf(" extracting: %s\n",write_filename);
 
@@ -606,7 +640,11 @@ int main(argc,argv)
         zlib_filefunc64_def ffunc;
 #        endif
 
+#if __STDC_WANT_SECURE_LIB__
+        strncpy_s(filename_try, MAXFILENAME+16, zipfilename, MAXFILENAME-1);
+#else
         strncpy(filename_try, zipfilename,MAXFILENAME-1);
+#endif
         /* strncpy doesnt append the trailing NULL, of the string is too long. */
         filename_try[ MAXFILENAME ] = '\0';
 
@@ -618,7 +656,11 @@ int main(argc,argv)
 #        endif
         if (uf==NULL)
         {
+#if __STDC_WANT_SECURE_LIB__
+            strcat_s(filename_try,MAXFILENAME+16,".zip");
+#else
             strcat(filename_try,".zip");
+#endif
 #            ifdef USEWIN32IOAPI
             uf = unzOpen2_64(filename_try,&ffunc);
 #            else

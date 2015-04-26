@@ -155,8 +155,13 @@ int check_exist_file(filename)
 {
     FILE* ftestexist;
     int ret = 1;
+#if __STDC_WANT_SECURE_LIB__
+    errno_t err = fopen_s(&ftestexist,filename,"rb");
+    if (FAILED(err))
+#else
     ftestexist = FOPEN_FUNC(filename,"rb");
     if (ftestexist==NULL)
+#endif
         ret = 0;
     else
         fclose(ftestexist);
@@ -186,11 +191,20 @@ int getFileCrc(const char* filenameinzip,void*buf,unsigned long size_buf,unsigne
 {
    unsigned long calculate_crc=0;
    int err=ZIP_OK;
-   FILE * fin = FOPEN_FUNC(filenameinzip,"rb");
+   FILE * fin;
+#if __STDC_WANT_SECURE_LIB__
+   errno_t ferr = fopen_s(&fin,filenameinzip,"rb");
+#else
+   fin = FOPEN_FUNC(filenameinzip,"rb");
+#endif
 
    unsigned long size_read = 0;
    unsigned long total_read = 0;
+#if __STDC_WANT_SECURE_LIB__
+   if (FAILED(ferr))
+#else
    if (fin==NULL)
+#endif
    {
        err = ZIP_ERRNO;
    }
@@ -225,9 +239,16 @@ int isLargeFile(const char* filename)
 {
   int largeFile = 0;
   ZPOS64_T pos = 0;
-  FILE* pFile = FOPEN_FUNC(filename, "rb");
+  FILE* pFile;
+#if __STDC_WANT_SECURE_LIB__
+  errno_t err = fopen_s(&pFile, filename, "rb");
+
+  if(SUCCEEDED(err))
+#else
+  pFile = FOPEN_FUNC(filename, "rb");
 
   if(pFile != NULL)
+#endif
   {
     int n = FSEEKO_FUNC(pFile, 0, SEEK_END);
     pos = FTELLO_FUNC(pFile);
@@ -321,8 +342,12 @@ int main(argc,argv)
         int dot_found=0;
 
         zipok = 1 ;
+#if __STDC_WANT_SECURE_LIB__
+        strncpy_s(filename_try, MAXFILENAME + 16, argv[zipfilenamearg], MAXFILENAME - 1);
+#else
         strncpy(filename_try, argv[zipfilenamearg],MAXFILENAME-1);
-        /* strncpy doesnt append the trailing NULL, of the string is too long. */
+#endif
+        /* strncpy doesnt append the trailing NULL, if the string is too long. */
         filename_try[ MAXFILENAME ] = '\0';
 
         len=(int)strlen(filename_try);
@@ -331,7 +356,11 @@ int main(argc,argv)
                 dot_found=1;
 
         if (dot_found==0)
+#if __STDC_WANT_SECURE_LIB__
+            strcat_s(filename_try,MAXFILENAME+16,".zip");
+#else
             strcat(filename_try,".zip");
+#endif
 
         if (opt_overwrite==2)
         {
@@ -349,7 +378,11 @@ int main(argc,argv)
                     char answer[128];
                     int ret;
                     printf("The file %s exists. Overwrite ? [y]es, [n]o, [a]ppend : ",filename_try);
+#if __STDC_WANT_SECURE_LIB__
+                    ret = scanf_s("%ls",answer,_countof(answer));
+#else
                     ret = scanf("%1s",answer);
+#endif
                     if (ret != 1)
                     {
                        exit(EXIT_FAILURE);
@@ -460,8 +493,13 @@ int main(argc,argv)
                     printf("error in opening %s in zipfile\n",filenameinzip);
                 else
                 {
+#if __STDC_WANT_SECURE_LIB__
+                    errno_t ferr = fopen_s(&fin,filenameinzip,"rb");
+                    if (FAILED(ferr))
+#else
                     fin = FOPEN_FUNC(filenameinzip,"rb");
                     if (fin==NULL)
+#endif
                     {
                         err=ZIP_ERRNO;
                         printf("error in opening %s for reading\n",filenameinzip);
