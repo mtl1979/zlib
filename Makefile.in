@@ -56,6 +56,7 @@ pkgconfigdir = ${libdir}/pkgconfig
 SRCDIR=
 ZINC=
 ZINCOUT=-I.
+BSDLIBS=
 
 OBJZ = adler32.o crc32.o deflate.o infback.o inffast.o inflate.o inftrees.o trees.o zutil.o
 OBJG = compress.o uncompr.o gzclose.o gzlib.o gzread.o gzwrite.o
@@ -120,7 +121,7 @@ infcover.o: $(SRCDIR)test/infcover.c $(SRCDIR)zlib.h zconf.h
 	$(CC) $(CFLAGS) $(ZINCOUT) -c -o $@ $(SRCDIR)test/infcover.c
 
 infcover: infcover.o libz.a
-	$(CC) $(CFLAGS) -o $@ infcover.o libz.a
+	$(CC) $(CFLAGS) -o $@ infcover.o libz.a $(BSDLIBS)
 
 cover: infcover
 	rm -f *.gcda
@@ -368,11 +369,12 @@ clean:
 	   _match.s maketree contrib/infback9/*.o
 	rm -rf objs
 	rm -f *.gcda *.gcno *.gcov
+	rm -f a.out ztest*
 	rm -f contrib/infback9/*.gcda contrib/infback9/*.gcno contrib/infback9/*.gcov
 
 maintainer-clean: distclean
 distclean: clean zconf zconf.h.cmakein docs
-	rm -f Makefile zlib.pc configure.log
+	rm -f zlib.pc configure.log match.S
 	-@rm -f .DS_Store
 	@if [ -f Makefile.in ]; then \
 	printf 'all:\n\t-@echo "Please use ./configure first.  Thank you."\n' > Makefile ; \

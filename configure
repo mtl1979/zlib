@@ -484,6 +484,9 @@ else
   echo "Checking for strerror... No." | tee -a configure.log
 fi
 
+# We need to delete zconf.h from source directory if building outside of it
+if [ "$SRCDIR" != "$BUILDDIR" ]; then rm -f $SRCDIR/zconf.h; fi
+
 # copy clean zconf.h for subsequent edits
 cp -p ${SRCDIR}zconf.h.in zconf.h
 
@@ -755,6 +758,55 @@ EOF
   fi
 fi
 
+# check where reallocf is defined
+echo -n "Checking where reallocf is defined... "
+cat > $test.c << EOF
+#include <stdlib.h>
+
+int main()
+{
+   void *p = reallocf(NULL, 255);
+}
+EOF
+if try $CC -c $CFLAGS -Werror $test.c; then
+  echo stdlib.h
+else
+cat > $test.c << EOF
+#include <bsd/stdlib.h>
+
+int main()
+{
+   void *p = realloc(NULL, 255);
+}
+EOF
+if try $CC -c $CFLAGS -Werror $test.c; then
+  echo bsd/stdlib.h
+  CFLAGS="$CFLAGS -DHAVE_BSD_STDLIB"
+else
+  echo Not found!
+fi;
+fi;
+
+# check if we need -lbsd for reallocf
+BSDLIBS=
+echo -n "Checking for reallocf... "
+  cat > $test.c <<EOF
+#include <bsd/stdlib.h>
+
+int main()
+{
+  void *p = reallocf(NULL, 255);
+  return 0;
+}
+EOF
+if ($CC $CFLAGS -o $test $test.c) 2>/dev/null ; then
+  echo Yes.
+elif ($CC $CFLAGS -o $test $test.c -lbsd) 2>/dev/null ; then
+  BSDLIBS=-lbsd
+  echo -lbsd
+else
+  echo No.
+fi;
 # show the results in the log
 echo >> configure.log
 echo ALL = $ALL >> configure.log
@@ -768,6 +820,7 @@ echo LDCONFIG = $LDCONFIG >> configure.log
 echo LDFLAGS = $LDFLAGS >> configure.log
 echo LDSHARED = $LDSHARED >> configure.log
 echo LDSHAREDLIBC = $LDSHAREDLIBC >> configure.log
+echo BSDLIBS = $BSDLIBS >> configure.log
 echo OBJC = $OBJC >> configure.log
 echo PIC_OBJC = $PIC_OBJC >> configure.log
 echo RANLIB = $RANLIB >> configure.log
@@ -788,7 +841,7 @@ echo prefix = $prefix >> configure.log
 echo sharedlibdir = $sharedlibdir >> configure.log
 echo uname = $uname >> configure.log
 
-# udpate Makefile with the configure results
+# update Makefile with the configure results
 sed < ${SRCDIR}Makefile.in "
 /^CC *=/s#=.*#=$CC#
 /^CFLAGS *=/s#=.*#=$CFLAGS#
@@ -815,6 +868,7 @@ sed < ${SRCDIR}Makefile.in "
 /^sharedlibdir *=/s#=.*#=$sharedlibdir#
 /^includedir *=/s#=.*#=$includedir#
 /^mandir *=/s#=.*#=$mandir#
+/^BSDLIBS *=/s#=.*#=$BSDLIBS#
 /^OBJC *=/s#=.*#= $OBJC#
 /^PIC_OBJC *=/s#=.*#= $PIC_OBJC#
 /^all: */s#:.*#: $ALL#
