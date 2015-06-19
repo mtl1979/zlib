@@ -8,6 +8,16 @@
 #ifndef ZCONF_H
 #define ZCONF_H
 
+/* 
+ * Check for _WIN32 or WIN32 needs to be before check for Z_PREFIX because
+ * some compilers set either WIN32 or _WIN32 but not always both.
+ */
+#if defined(_WIN32) || defined(_WIN32_WCE) || defined(__WIN32__)
+#  ifndef WIN32
+#    define WIN32
+#  endif
+#endif
+
 /*
  * If you *really* need a unique prefix for all types and library functions,
  * compile with -DZ_PREFIX. The "standard" zlib should be compiled without it.
@@ -74,7 +84,7 @@
 #    define gzoffset64            z_gzoffset64
 #    define gzopen                z_gzopen
 #    define gzopen64              z_gzopen64
-#    ifdef _WIN32
+#    ifdef WIN32
 #      define gzopen_w              z_gzopen_w
 #    endif
 #    define gzprintf              z_gzprintf
@@ -160,11 +170,6 @@
 #endif
 #if defined(_WINDOWS) && !defined(WINDOWS)
 #  define WINDOWS
-#endif
-#if defined(_WIN32) || defined(_WIN32_WCE) || defined(__WIN32__)
-#  ifndef WIN32
-#    define WIN32
-#  endif
 #endif
 #if (defined(MSDOS) || defined(OS2) || defined(WINDOWS)) && !defined(WIN32)
 #  if !defined(__GNUC__) && !defined(__FLAT__) && !defined(__386__)
@@ -428,7 +433,7 @@ typedef uLong FAR uLongf;
 #  endif
 #endif
 
-#ifdef _WIN32
+#ifdef WIN32
 #  ifndef Z_SOLO
 #    include <stddef.h>         /* for wchar_t */
 #  endif
@@ -481,10 +486,10 @@ typedef uLong FAR uLongf;
 #  define z_off_t long
 #endif
 
-#if !defined(_WIN32) && defined(Z_LARGE64)
+#if !defined(WIN32) && defined(Z_LARGE64)
 #  define z_off64_t off64_t
 #else
-#  if (defined(_WIN32) || defined(WIN32)) && !defined(__GNUC__) && !defined(Z_SOLO)
+#  if defined(WIN32) && !defined(__GNUC__) && !defined(Z_SOLO)
 #    define z_off64_t __int64
 #  else
 #    define z_off64_t z_off_t
