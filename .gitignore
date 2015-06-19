@@ -8,18 +8,24 @@
 *.lo
 *.o
 *.dylib
+*.pdb
 
 *.gcda
 *.gcno
 *.gcov
 
+/debug
 /example
 /example64
 /examplesh
 /libz.so*
+/Makefile
+/Makefile.Debug
+/Makefile.Release
 /minigzip
 /minigzip64
 /minigzipsh
+/release
 /zlib.pc
 
 .DS_Store
