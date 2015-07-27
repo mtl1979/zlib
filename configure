@@ -210,6 +210,13 @@ if test "$gcc" -eq 1 && ($cc -c $test.c) >> configure.log 2>&1; then
         LDSHARED=${LDSHARED-"$cc -shared"}
         LDSHAREDLIBC=""
         EXE='.exe' ;;
+  MSYS*) LDSHARED=${LDSHARED-"$cc -shared"}
+         SFLAGS="${CFLAGS}"
+         shared_ext='.dll'
+         SHAREDLIB=msys-z$shared_ext
+         SHAREDLIBV=$SHAREDLIB
+         SHAREDLIBM=$SHAREDLIB
+         EXE='.exe' ;;
   QNX*)  # This is for QNX6. I suppose that the QNX rule below is for QNX2,QNX4
          # (alain.bonnefoy@icbt.com)
                  LDSHARED=${LDSHARED-"$cc -shared -Wl,-hlibz.so.1"} ;;

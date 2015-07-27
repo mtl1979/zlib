@@ -281,9 +281,11 @@ gzwrite.lo: $(SRCDIR)gzwrite.c
 
 placebo $(SHAREDLIBV): $(PIC_OBJS) libz.a
 	$(LDSHARED) $(SFLAGS) -o $@ $(PIC_OBJS) $(LDSHAREDLIBC) $(LDFLAGS)
-	rm -f $(SHAREDLIB) $(SHAREDLIBM)
-	ln -s $@ $(SHAREDLIB)
-	ln -s $@ $(SHAREDLIBM)
+	if [ $(SHAREDLIB) != $(SHAREDLIBV) ]; then \
+	  rm -f $(SHAREDLIB) $(SHAREDLIBM); \
+	  ln -s $@ $(SHAREDLIB); \
+	  ln -s $@ $(SHAREDLIBM); \
+	fi
 	-@rmdir objs
 
 example$(EXE): example.o $(STATICLIB)
