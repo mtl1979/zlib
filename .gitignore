@@ -14,6 +14,10 @@
 *.gcno
 *.gcov
 
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+
 /debug
 /example
 /example64
