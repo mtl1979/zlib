@@ -9,6 +9,7 @@ set(VERSION "1.2.8.1")
 option(ASM686 "Enable building i686 assembly implementation")
 option(AMD64 "Enable building amd64 assembly implementation")
 option(TESTS "Enable building examples and tests" ON)
+option(MINIZIP "Compiles zlib with minizip")
 
 set(INSTALL_BIN_DIR "${CMAKE_INSTALL_PREFIX}/bin" CACHE PATH "Installation directory for executables")
 set(INSTALL_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib" CACHE PATH "Installation directory for libraries")
@@ -92,6 +93,40 @@ configure_file(	${CMAKE_CURRENT_SOURCE_DIR}/zconf.h.cmakein
 		${CMAKE_CURRENT_BINARY_DIR}/zconf.h @ONLY)
 include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_SOURCE_DIR})
 
+#============================================================================
+# minizip
+#============================================================================
+
+set (MINIZIP_SRCS
+    contrib/minizip/ioapi.c
+    contrib/minizip/minizip.c
+    contrib/minizip/mztools.c
+    contrib/minizip/zip.c)
+
+set (MINIUNZ_SRCS
+    contrib/minizip/ioapi.c
+    contrib/minizip/miniunz.c
+    contrib/minizip/mztools.c
+    contrib/minizip/unzip.c)
+
+set (MINIZIP_HDRS
+    contrib/minizip/crypt.h
+    contrib/minizip/ioapi.h
+    contrib/minizip/mztools.h
+    contrib/minizip/unzip.h
+    contrib/minizip/zip.h)
+
+if(WIN32)
+    set (MINIZIP_SRCS ${MINIZIP_SRCS} contrib/minizip/iowin32.c)
+    set (MINIUNZ_SRCS ${MINIUNZ_SRCS} contrib/minizip/iowin32.c)
+    set (MINIZIP_HDRS ${MINIZIP_HDRS} contrib/minizip/iowin32.h)
+endif(WIN32)
+
+if(MINIZIP)
+    include_directories(${MINIZIP_HDRS})
+    add_library(minizip SHARED ${MINIZIP_SRCS} ${MINIZIP_HDRS})
+    add_library(miniunz SHARED ${MINIUNZ_SRCS} ${MINIZIP_HDRS})
+endif(MINIZIP)
 
 #============================================================================
 # zlib
@@ -216,6 +251,11 @@ elseif(BUILD_SHARED_LIBS AND WIN32)
     # Creates zlib1.dll when building shared library version
     set_target_properties(zlib PROPERTIES SUFFIX "1.dll")
 endif()
+
+if(MINIZIP)
+    target_link_libraries(minizip zlib)
+    target_link_libraries(miniunz zlib)
+endif(MINIZIP)
 
 if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL )
     install(TARGETS zlib zlibstatic
