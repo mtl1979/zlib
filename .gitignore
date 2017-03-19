@@ -32,5 +32,6 @@
 /minigzipsh
 /release
 /zlib.pc
+/configure.log
 
 .DS_Store
